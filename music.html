@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Simple Music Player</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;800&display=swap');
+
+  :root {
+    --color-bg: #ffffff;
+    --color-text-body: #6b7280;
+    --color-text-heading: #111827;
+    --color-primary: #2563eb;
+    --color-shadow: rgba(0, 0, 0, 0.1);
+    --button-bg: #f9fafb;
+    --button-hover-bg: #e0e7ff;
+    --button-active-bg: #c7d2fe;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--color-bg);
+    color: var(--color-text-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  a:hover,
+  a:focus {
+    text-decoration: underline;
+  }
+
+  /* Container */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  /* Sticky nav */
+  nav {
+    position: sticky;
+    top: 0;
+    background: var(--color-bg);
+    box-shadow: 0 2px 6px var(--color-shadow);
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1rem;
+  }
+
+  .logo {
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--color-text-heading);
+    user-select: none;
+  }
+
+  nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+  }
+
+  nav li {
+    font-weight: 600;
+    color: var(--color-text-body);
+  }
+
+  nav li a {
+    font-weight: 600;
+  }
+
+  nav li a:hover,
+  nav li a:focus {
+    color: var(--color-primary);
+  }
+
+  /* Hero Section */
+  header.hero {
+    min-height: 40vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem 1rem 5rem;
+    text-align: center;
+  }
+
+  header.hero h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--color-text-heading);
+    margin-bottom: 0.5rem;
+  }
+
+  header.hero p {
+    font-size: 1.25rem;
+    color: var(--color-text-body);
+    max-width: 600px;
+  }
+
+  /* Player Card */
+  .player-card {
+    background: var(--color-bg);
+    border-radius: 0.75rem;
+    box-shadow: 0 8px 16px var(--color-shadow);
+    padding: 2rem 2.5rem 2.5rem;
+    max-width: 480px;
+    margin: -7rem auto 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .track-info {
+    text-align: center;
+  }
+
+  .track-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--color-text-heading);
+  }
+
+  .track-artist {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-text-body);
+    margin-top: 0.25rem;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 1.8rem;
+  }
+
+  button.control-btn {
+    background: var(--button-bg);
+    border: none;
+    border-radius: 50%;
+    padding: 0.7rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+  }
+
+  button.control-btn:hover,
+  button.control-btn:focus {
+    background: var(--button-hover-bg);
+    outline: none;
+    transform: scale(1.05);
+  }
+
+  button.control-btn:active {
+    background: var(--button-active-bg);
+    transform: scale(0.98);
+  }
+
+  /* Icons - simple SVG inline, monochrome */
+  svg {
+    fill: var(--color-text-body);
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Play/pause icon special color */
+  .control-btn.play svg,
+  .control-btn.pause svg {
+    fill: var(--color-primary);
+  }
+
+  /* Progress bar */
+  .progress-container {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--color-primary);
+    width: 0%;
+    transition: width 0.2s ease;
+  }
+
+  .time-container {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-body);
+    margin-top: 0.4rem;
+    font-feature-settings: "tnum";
+  }
+
+  /* Responsive */
+  @media (max-width: 520px) {
+    .player-card {
+      max-width: 90vw;
+      margin: -5rem auto 3rem;
+      padding: 1.5rem 1.75rem 2rem;
+    }
+
+    header.hero h1 {
+      font-size: 2.5rem;
+    }
+  }
+</style>
+</head>
+<body>
+<nav aria-label="Primary">
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;">
+    <div class="logo" tabindex="0">MyMusic</div>
+    <ul role="list">
+      <li><a href="#" tabindex="0">Home</a></li>
+      <li><a href="#" tabindex="0">Library</a></li>
+      <li><a href="#" tabindex="0">About</a></li>
+    </ul>
+  </div>
+</nav>
+
+<header class="hero" role="banner">
+  <div class="container">
+    <h1>Simple Music Player</h1>
+    <p>A clean and elegant audio player with controls and track info.</p>
+  </div>
+</header>
+
+<main class="container" role="main">
+  <section class="player-card" aria-label="Audio player controls and track information">
+    <div class="track-info" aria-live="polite" aria-atomic="true">
+      <div class="track-title" id="track-title">Loading...</div>
+      <div class="track-artist" id="track-artist">—</div>
+    </div>
+
+    <div class="progress-container" id="progress-container" aria-label="Audio progress bar" role="slider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="time-container">
+      <span id="current-time">0:00</span>
+      <span id="duration">0:00</span>
+    </div>
+
+    <div class="controls" role="group" aria-label="Playback controls">
+      <button class="control-btn" id="prev-btn" aria-label="Previous Track" tabindex="0" type="button" title="Previous Track">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 18V6l12 6-12 6z"/></svg>
+      </button>
+      <button class="control-btn play" id="play-pause-btn" aria-label="Play" tabindex="0" type="button" title="Play/Pause">
+        <svg viewBox="0 0 24 24" id="play-icon" aria-hidden="true" focusable="false">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        <svg viewBox="0 0 24 24" id="pause-icon" aria-hidden="true" focusable="false" style="display:none;">
+          <path d="M6 19h4V5H6v14zM14 5v14h4V5h-4z"/>
+        </svg>
+      </button>
+      <button class="control-btn" id="next-btn" aria-label="Next Track" tabindex="0" type="button" title="Next Track">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6v12l-12-6 12-6z"/></svg>
+      </button>
+    </div>
+  </section>
+</main>
+
+<script>
+  // Array of tracks with title, artist, and audio source
+  const tracks = [
+    {
+      title: "tum hi ho",
+      artist: "Arijit singh",
+      src: "https://www.youtube.com/watch?v=Umqb9KENgmk"
+    },
+    {
+      title: "Dil tutda",
+      artist: "jassi gill",
+      src: "https://www.bensound.com/bensound-music/bensound-sunny.mp3"
+    },
+    {
+      title: "born to shine",
+      artist: "Diljit dosanjh",
+      src: "https://www.bensound.com/bensound-music/bensound-creativeminds.mp3"
+    }
+  ];
+
+  // Select elements
+  const audio = new Audio();
+  const playPauseBtn = document.getElementById('play-pause-btn');
+  const playIcon = document.getElementById('play-icon');
+  const pauseIcon = document.getElementById('pause-icon');
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const trackTitle = document.getElementById('track-title');
+  const trackArtist = document.getElementById('track-artist');
+  const progressContainer = document.getElementById('progress-container');
+  const progressBar = document.getElementById('progress-bar');
+  const currentTimeEl = document.getElementById('current-time');
+  const durationEl = document.getElementById('duration');
+
+  let currentTrackIndex = 0;
+  let isPlaying = false;
+  let updateProgressInterval;
+
+  function loadTrack(index) {
+    if (index < 0) index = tracks.length -1;
+    if (index >= tracks.length) index = 0;
+    currentTrackIndex = index;
+
+    audio.src = tracks[currentTrackIndex].src;
+    audio.load();
+
+    trackTitle.textContent = tracks[currentTrackIndex].title;
+    trackArtist.textContent = tracks[currentTrackIndex].artist;
+
+    // Reset states
+    progressBar.style.width = '0%';
+    currentTimeEl.textContent = '0:00';
+    durationEl.textContent = '0:00';
+    updateAriaProgress(0);
+
+    if (isPlaying) {
+      audio.play();
+    }
+  }
+
+  function togglePlayPause() {
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      audio.play();
+    }
+  }
+
+  function updatePlayPauseButton() {
+    if(isPlaying){
+      playIcon.style.display = 'none';
+      pauseIcon.style.display = 'inline';
+      playPauseBtn.setAttribute('aria-label', 'Pause');
+    } else {
+      playIcon.style.display = 'inline';
+      pauseIcon.style.display = 'none';
+      playPauseBtn.setAttribute('aria-label', 'Play');
+    }
+  }
+
+  function prevTrack() {
+    loadTrack(currentTrackIndex - 1);
+  }
+
+  function nextTrack() {
+    loadTrack(currentTrackIndex + 1);
+  }
+
+  function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+
+  function updateProgress() {
+    if (!audio.duration) return;
+    const progressPercent = (audio.currentTime / audio.duration) * 100;
+    progressBar.style.width = `${progressPercent}%`;
+    currentTimeEl.textContent = formatTime(audio.currentTime);
+    durationEl.textContent = formatTime(audio.duration);
+    updateAriaProgress(progressPercent);
+  }
+
+  function updateAriaProgress(percent) {
+    progressContainer.setAttribute('aria-valuenow', Math.round(percent));
+  }
+
+  // Seeking from progress bar
+  function setProgress(e) {
+    const width = this.clientWidth;
+    const clickX = e.offsetX;
+    if (!audio.duration) return;
+    audio.currentTime = (clickX / width) * audio.duration;
+  }
+
+  // Event Listeners
+  playPauseBtn.addEventListener('click', () => {
+    togglePlayPause();
+  });
+
+  prevBtn.addEventListener('click', () => {
+    prevTrack();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    nextTrack();
+  });
+
+  audio.addEventListener('play', () => {
+    isPlaying = true;
+    updatePlayPauseButton();
+  });
+
+  audio.addEventListener('pause', () => {
+    isPlaying = false;
+    updatePlayPauseButton();
+  });
+
+  audio.addEventListener('timeupdate', updateProgress);
+
+  audio.addEventListener('ended', () => {
+    nextTrack();
+  });
+
+  progressContainer.addEventListener('click', setProgress);
+
+  // Allow keyboard arrows.Left/Right to seek when progress bar is focused
+  progressContainer.addEventListener('keydown', (e) => {
+    if (!audio.duration) return;
+    const step = 5; // seconds
+    switch(e.key){
+      case 'ArrowLeft':
+        audio.currentTime = Math.max(0, audio.currentTime - step);
+        e.preventDefault();
+        break;
+      case 'ArrowRight':
+        audio.currentTime = Math.min(audio.duration, audio.currentTime + step);
+        e.preventDefault();
+        break;
+      case 'Home':
+        audio.currentTime = 0;
+        e.preventDefault();
+        break;
+      case 'End':
+        audio.currentTime = audio.duration;
+        e.preventDefault();
+        break;
+    }
+  });
+
+  // Load initial track on page load
+  loadTrack(currentTrackIndex);
+</script>
+</body>
+</html>
+
